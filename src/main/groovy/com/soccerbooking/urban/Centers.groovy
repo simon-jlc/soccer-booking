@@ -28,5 +28,10 @@ enum Centers {
         this.id = id
     }
 
+    static Centers[] parseOptions(final OptionAccessor options) {
+        def centersStr = options.'atCenter' as String
+        return centersStr.split(",")
+    }
+
     abstract Set<FieldType> fieldTypes();
 }

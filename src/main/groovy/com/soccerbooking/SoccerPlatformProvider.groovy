@@ -20,7 +20,7 @@ trait SoccerPlatformProvider {
      * Availability check query builder, according your CLI parameters.
      * @return
      */
-    abstract HttpPost createAvailabilityCheckQuery()
+    abstract List<HttpPost> createAvailabilityCheckQueries()
 
     /**
      * Build cookie store. Used to store session authenticated token.
