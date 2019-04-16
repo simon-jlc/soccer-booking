@@ -78,7 +78,6 @@ class UrbanSoccerProvider implements SoccerPlatformProvider {
             cookie.setDomain(HOST)
             store.addCookie(cookie)
         }
-        httpResponse.close()
     }
 
     @Override
@@ -87,7 +86,7 @@ class UrbanSoccerProvider implements SoccerPlatformProvider {
         def duration = options.'duration'
         def dateTime = Date.parse("dd/MM/yyyy HH:mm", options.'onDate')
         def localDateTime = dateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
-        def centers = Centers.parseOptions(options)
+        def centers = CenterDesc.parseOptions(options)
         return centers.collect {
 
             def center = it
@@ -149,7 +148,9 @@ class UrbanSoccerProvider implements SoccerPlatformProvider {
             def label = it
             def otherCenters = centers[it] as Collection
             if (otherCenters) {
-                otherCenters.collect { Center.of(label, it) }
+                otherCenters.collect {
+                    Center.of(label, it)
+                }
             }
         }.flatten().findAll { it != null }
 

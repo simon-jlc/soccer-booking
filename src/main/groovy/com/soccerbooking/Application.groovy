@@ -1,9 +1,11 @@
 package com.soccerbooking
 
 import com.soccerbooking.filters.DayOfWeekFilter
+import com.soccerbooking.filters.OnlyAskedCenterFilter
 import com.soccerbooking.filters.RangeHourFilter
 import com.soccerbooking.urban.UrbanSoccerProvider
 import groovy.util.logging.Slf4j
+import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClientBuilder
 
 @Slf4j
@@ -23,24 +25,26 @@ class Application {
         def cookies = soccerService.getOrBuildCookieStore()
 
         // build HTTPClient
-        def client = HttpClientBuilder.create()
+        HttpClientBuilder.create()
                 .setDefaultCookieSpecRegistry()
                 .setDefaultCookieStore(cookies)
-                .build()
+                .build().withCloseable { CloseableHttpClient client ->
 
-        // authentication
-        def httpAuthQuery = soccerService.createAuthenticationQuery()
-        def httpAuthResponse = client.execute(httpAuthQuery)
-        soccerService.authenticate(httpAuthResponse)
+            // authentication
+            def httpAuthQuery = soccerService.createAuthenticationQuery()
+            client.execute(httpAuthQuery).withCloseable { httpAuthResponse ->
+                soccerService.authenticate(httpAuthResponse)
+            }
 
-        // check availability
-        def httpCheckQueies = soccerService.createAvailabilityCheckQueries()
-        httpCheckQueies.each {
-            def httpCheckResponse = client.execute(it)
-            soccerService.checkAvailability(httpCheckResponse)
+
+            // check availability
+            def httpCheckQueies = soccerService.createAvailabilityCheckQueries()
+            httpCheckQueies.each {
+                client.execute(it).withCloseable { httpCheckResponse ->
+                    soccerService.checkAvailability(httpCheckResponse)
+                }
+            }
         }
-
-        client.close()
     }
 
     def parse(def args) {
@@ -53,7 +57,7 @@ class Application {
             at longOpt: 'atCenter', required: true, args: 1, 'Values are [ PUTEAUX, ASNIERES, LADEFENSE ]'
             on longOpt: 'onDate', required: true, args: 1, 'Expected format date and time like < dd/MM/yyyy HH:mm>'
             fd longOpt: 'filterDayOfWeek', args: 1, 'Keep only suggested alternative on specified days. Values [ MONDAY, TUESDAY.., SUNDAY ]'
-            fh longOpt: 'filterRangeHour', args:1, 'Keep only suggested alternative on specified range hours. Expected format < HH:mm-HH:mm >'
+            fh longOpt: 'filterRangeHour', args: 1, 'Keep only suggested alternative on specified range hours. Expected format < HH:mm-HH:mm >'
             urban longOpt: 'urban', 'Check UrbanSoccer platform'
             five longOpt: 'lefive', 'Check LeFive platform'
         }
@@ -75,6 +79,7 @@ class Application {
         def filters = [] as Set
         if (options.'filterDayOfWeek') filters << new DayOfWeekFilter(options)
         if (options.'filterRangeHour') filters << new RangeHourFilter(options)
+        filters << new OnlyAskedCenterFilter(options)
         filters
     }
 }

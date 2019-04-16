@@ -5,10 +5,7 @@ Un utilitaire qui te permet de voir en un coup d'oeil les prochains crenaux disp
 Améliorations:
 * Ajouter d'autres provider (LeFive, EliteSoccer...)
 * Ajouter d'autres terrains..
-* Ajouter des fonctions de filtres, quelques exemples:
-    * --filterDayOfWeek SATURDAY,SUNDAY
-    * --filterRangeHour 16:00-21:00
-    * --filterCenter ASNIERES
+* Ajouter des fonctions de filtres manquantes:
     * --mulipleTry (mode qui fait plusieurs tentatives pour vous)
 
 ### Build a FatJar
